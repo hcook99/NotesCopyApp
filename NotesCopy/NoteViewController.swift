@@ -7,24 +7,39 @@
 //
 
 import UIKit
+import CoreData
 
-class NoteViewController: UIViewController {
+protocol UpdateNoteDelegate {
+    func updateNoteInfo(_ fullText: String,_ postionOfNote: Int);
+}
 
+class NoteViewController: UIViewController, UITextViewDelegate {
+
+    var note: NSManagedObject!
+    var notePos: Int!
+    @IBOutlet weak var noteMain: UITextView!
+    var delegate: UpdateNoteDelegate!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        noteMain.delegate = self
+        guard let note = note else{
+            return
+        }
+        let bodyOptional = note.value(forKey: "body") as? String
+        guard let body = bodyOptional else {
+            return
+        }
+        noteMain.text = body
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if let delegate = self.delegate {
+            let body = note.value(forKey: "body") as? String
+            if(noteMain.text != body){
+                delegate.updateNoteInfo(noteMain.text, notePos)
+            }
+        }
     }
-    */
-
 }
